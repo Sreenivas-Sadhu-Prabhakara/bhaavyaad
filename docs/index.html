@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhaavyaad — your price memory</title>
+<meta name="description" content="Bhaavyaad remembers the last price you paid each supplier for each item — your own purchase memory, not live market rates — so you never overpay on the next quote.">
+<style>
+  :root{--bg:#f2f7f3;--card:#fff;--ink:#132018;--muted:#54685c;--brand:#3a6e4f;--brand-ink:#1f4530;--line:#dbe7df;--accent:#e7f1eb}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1512;--card:#161d19;--ink:#e6efe9;--muted:#96a89d;--brand:#5fa77e;--brand-ink:#bfe3cd;--line:#233029;--accent:#152019}}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header{padding:64px 0 24px;text-align:center}
+  .eyebrow{color:var(--brand);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px}
+  h1{font-size:44px;margin:.2em 0 .1em;letter-spacing:-.02em}
+  .tag{color:var(--muted);font-size:19px;max-width:640px;margin:8px auto 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:28px 0}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:34px}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h2{margin:0 0 8px;font-size:20px}
+  input{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:14px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.row input{flex:1;min-width:80px}
+  button{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:9px 14px;cursor:pointer}
+  .kv{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line)}
+  .kv b{color:var(--brand-ink)}
+  .note{background:var(--accent);border-radius:10px;padding:10px;font-size:13px;color:var(--muted);margin-top:12px;text-align:center}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Bhaavyaad · भाव याद</div>
+    <h1>What did you pay last time?</h1>
+    <p class="tag">Prices drift a little every week across two or three suppliers. Bhaavyaad remembers
+      the last price you paid — so you check before you agree, instead of digging through old chits.</p>
+  </header>
+  <div class="grid">
+    <div class="card">
+      <h2>Try it</h2>
+      <div class="row">
+        <input id="sup" placeholder="Supplier">
+        <input id="itm" placeholder="Item">
+        <input id="pr" type="number" placeholder="₹ price" style="max-width:100px">
+        <button onclick="add()">Save</button>
+      </div>
+      <div style="font-weight:600;margin:6px 0">Last price you paid</div>
+      <div id="list"></div>
+      <div class="note">This is YOUR purchase memory — not live market rates.</div>
+    </div>
+    <div class="card">
+      <h2>A memory that accumulates</h2>
+      <p style="color:var(--muted)">Billing apps capture purchase bills but never surface a fast
+        "last price per item per supplier" lookup. The real incumbent is a pile of old invoices.</p>
+      <p style="color:var(--muted)">Log a buy in two taps; recall the last price the instant a
+        salesman quotes a new one.</p>
+      <p style="color:var(--muted);font-size:14px">Flutter → Go → PostgreSQL journal service.</p>
+    </div>
+  </div>
+  <footer>Bhaavyaad · a local-first shopkeeper tool · offline, no account.</footer>
+</div>
+<script>
+  const buys=[]; // newest-first
+  const inr=v=>'₹'+(+v).toFixed(2);
+  function render(){
+    const seen={}, out=[];
+    for(const b of buys){ const k=b.sup+' · '+b.itm; if(!(k in seen)){ seen[k]=b.pr; out.push([k,b.pr]); } }
+    document.getElementById('list').innerHTML = out.length
+      ? out.map(([k,v])=>`<div class="kv"><span>${k}</span><b>${inr(v)}</b></div>`).join('')
+      : '<div style="color:var(--muted);padding:8px 0">No purchases yet — add one above.</div>';
+  }
+  function add(){
+    const sup=document.getElementById('sup').value.trim(), itm=document.getElementById('itm').value.trim(), pr=+document.getElementById('pr').value||0;
+    if(!sup||!itm||pr<=0) return;
+    buys.unshift({sup,itm,pr}); document.getElementById('pr').value=''; render();
+  }
+  render();
+</script>
+</body>
+</html>
